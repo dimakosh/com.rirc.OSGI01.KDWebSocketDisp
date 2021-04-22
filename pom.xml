@@ -1,0 +1,88 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.rirc.OSGI01.KDWebSocketDisp</groupId>
+	<artifactId>KDOSGIWSDisp</artifactId>
+	<version>0.0.1</version>
+	<name>KDOSGIWSDisp</name>
+	
+	<properties>
+		<java.version>11</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+	</properties>
+
+	<packaging>bundle</packaging>
+ 
+	<dependencies>
+		<dependency>
+		    <groupId>org.eclipse.jetty.websocket</groupId>
+		    <artifactId>websocket-servlet</artifactId>
+		    <version>9.4.20.v20190813</version>
+		    <scope>provided</scope>
+		</dependency>
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+            <version>6.0.0</version>
+        </dependency>
+		<dependency>
+		    <groupId>org.osgi</groupId>
+		    <artifactId>osgi.cmpn</artifactId>
+		    <version>6.0.0</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>com.rirc.OSGI01</groupId>
+		    <artifactId>OSGI01</artifactId>
+		    <version>0.0.1</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>com.google.code.gson</groupId>
+		    <artifactId>gson</artifactId>
+		    <version>2.8.6</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.apache.poi</groupId>
+		    <artifactId>poi</artifactId>
+		    <version>4.0.1</version>
+		</dependency>
+		
+<!-- 
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+		    <version>4.0.1</version>
+		</dependency>
+ -->
+	</dependencies>
+
+	<build>
+	    <plugins>
+	        <plugin>
+	            <groupId>org.apache.felix</groupId>
+	            <artifactId>maven-bundle-plugin</artifactId>
+	            <version>4.2.1</version>
+	            <extensions>true</extensions>
+	            <configuration>
+	                <instructions>
+<!-- 	                
+	                    <Private-Package>
+	                    	com.google.gson.*,
+	                    </Private-Package>
+-->	                    
+	                	<Export-Package>
+	                		com.rirc.OSGI01.RunSoftRep
+	                	</Export-Package>
+
+	                    <Bundle-Activator>com.rirc.OSGI01.KDWebSocketDisp.Activator</Bundle-Activator>
+	                </instructions>
+	            </configuration>
+	        </plugin>
+	    </plugins>
+	</build>    
+</project>
