@@ -281,28 +281,39 @@ public class WebSocketDisp01 {
 	private static Object[] setPreparedValues(JsonArray jaTypes, JsonArray jaValues) throws Exception {
 		Object[] values= new Object[jaTypes.size()];
 
-		for (int i= 0; i< jaTypes.size(); i++) {
+		for (int i1= 0; i1< jaTypes.size(); i1++) {
 			
-			JsonElement jeType= jaTypes.get(i);
-			if (jeType.isJsonNull()) values[i]= null;
+			JsonElement jeType= jaTypes.get(i1);
+			if (jeType.isJsonNull()) values[i1]= null;
 			else {
 				String type= jeType.getAsString();
 				switch (type) {
 				case "java.lang.Integer":
-					values[i]= jaValues.get(i).getAsInt();
+					values[i1]= jaValues.get(i1).getAsInt();
 					break;
 				case "java.lang.Double":
-					values[i]= jaValues.get(i).getAsDouble();
+					values[i1]= jaValues.get(i1).getAsDouble();
 					break;
 				case "java.lang.String":
-					values[i]= jaValues.get(i).getAsString();
+					values[i1]= jaValues.get(i1).getAsString();
 					break;
 				//case "com.smartgwt.client.util.LogicalDate":
 				case "java.util.Date":
-					values[i]= getDateFromString(jaValues.get(i).getAsString());
+					values[i1]= getDateFromString(jaValues.get(i1).getAsString());
 					break;
+				case "com.google.gwt.core.client.JavaScriptObject": {
+					JsonArray ja= jaValues.get(i1).getAsJsonArray();
+					int n= ja.size();
+					byte[] b= new byte[n];
+					for (int i2= 0; i2< n; i2++) {
+						JsonElement je= ja.get(i2);
+						b[i2]= je.getAsByte();
+					}
+					values[i1]= b;
+					break;
+				}
 				default:
-					throw new Exception("setPreparedValues error type: "+type+", value: "+String.valueOf(jaValues.get(i).getAsJsonObject()));
+					throw new Exception("setPreparedValues error type: "+type+", value: "+String.valueOf(jaValues.get(i1)));
 				}
 			}
 		}
