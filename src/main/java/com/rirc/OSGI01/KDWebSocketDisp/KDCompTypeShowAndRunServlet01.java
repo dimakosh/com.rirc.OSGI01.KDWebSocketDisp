@@ -81,6 +81,13 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 		public Method _getMethod() {
 			return method;
 		}
+
+		@Override
+		public String toString() {
+			return "PrData [cf=" + cf + ", serv=" + serv + ", method=" + method + ", getCf()=" + getCf()
+					+ ", getServ()=" + getServ() + ", _getMethod()=" + _getMethod() + ", getClass()=" + getClass()
+					+ ", hashCode()=" + hashCode() + ", toString()=" + super.toString() + "]";
+		}
     }
 
 	private final ConcurrentMap<UUID,PrData> mUUID2CF= new ConcurrentHashMap<UUID,PrData>();
@@ -300,21 +307,26 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 					} catch (Exception ex) {
 						throw new RuntimeException(ex);
 					}
-				});				
+				}, KDExecutors.getStdExecutor());
 				mUUID2CF.put(compIdent, new PrData(cf, runSoftRep, null));
 
 				JsonArray jaRets= new JsonArray();
+				jaRets.add("Формирование XLS");
 				joRes.add("StepInfo", jaRets);
 			}
 			break;
 			case "java.io.File": {
 				File[] fileBin= (isArray)? (File[])r: new File[] {(File)r};
 				
-				Long sysTime= System.currentTimeMillis();
-				mSysTime2TmpFile.put(sysTime, fileBin);
-				joRes.addProperty("Rets", sysTime);
-				joRes.addProperty("FCnt", fileBin.length);
-				joRes.addProperty("FName", fileBin[0].getName());
+				if (fileBin==null || fileBin.length==0 || fileBin[0]==null) {
+					joRes.addProperty("Exception", "Файл не сформирован");
+				} else {
+					Long sysTime= System.currentTimeMillis();
+					mSysTime2TmpFile.put(sysTime, fileBin);
+					joRes.addProperty("Rets", sysTime);
+					joRes.addProperty("FCnt", fileBin.length);
+					joRes.addProperty("FName", fileBin[0].getName());
+				}
 			}
 			break;
 			default:
@@ -323,9 +335,28 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 		} catch (InterruptedException | CancellationException ex) {
 			joRes.addProperty("Exception", KDStr.getExMessage(ex));
 		} catch (ExecutionException ex1) {
-			Throwable ex2= ex1.getCause().getCause();
-			if (ex2 instanceof InvocationTargetException) ex2= ex2.getCause(); 
+			Throwable ex2= ex1;
+			
+			Throwable e;
+			while ((e= ex2.getCause())!=null) {
+				if (e instanceof InvocationTargetException) {
+					ex2= e.getCause();
+					if (ex2==null) ex2= e;
+					break;
+				} else ex2= e;
+			}
+
 			joRes.addProperty("Exception", KDStr.getExAllInfo(ex2));
+
+			/*
+			try {
+				Throwable ex2= ex1.getCause().getCause();
+				if (ex2 instanceof InvocationTargetException) ex2= ex2.getCause(); 
+				joRes.addProperty("Exception", KDStr.getExAllInfo(ex2));
+			} catch (Exception ex3) {
+				joRes.addProperty("Exception", KDStr.getExAllInfo(ex1)+'\n'+KDStr.getExAllInfo(ex3));
+			}
+			*/
 		} catch (TimeoutException exTimeoutException) {
 			JsonArray jaStepNames= rootObject.get("StepNames").getAsJsonArray();
 			
@@ -367,18 +398,32 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 			joRes.add("StepInfo", jaRets);
 
 			mUUID2CF.put(compIdent, prData);
+		} catch (Exception ex) {
+			joRes.addProperty("Exception", KDStr.getExAllInfo(ex));
+		} catch (Throwable ex) {
+			joRes.addProperty("Exception", "Throwable: "+KDStr.getExAllInfo(ex));
 		}
 
 		return joRes;
 	}
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		req.setCharacterEncoding("UTF-8");
 		res.setCharacterEncoding("UTF-8");
 		res.setContentType("text/plain; charset=UTF-8");
 		res.addHeader("Access-Control-Allow-Origin", "*");
 		
+		res.getWriter().print(KDTime.getCurDateTime());
+    }
+	
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+		req.setCharacterEncoding("UTF-8");
+		res.setCharacterEncoding("UTF-8");
+		res.setContentType("text/plain; charset=UTF-8");
+		res.addHeader("Access-Control-Allow-Origin", "*");
+
 		try {
 			String runKDComp_json= req.getParameter("runKDComp");
 			if (runKDComp_json!=null) {
@@ -390,10 +435,12 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 				res.getWriter().print(pingKDComp(mUUID2CF, pingKDComp_json));
 			}			
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+			ex.printStackTrace();
 			throw new ServletException(KDStr.getExMessage(ex));
 		} catch (InvocationTargetException ex) {
+			ex.printStackTrace();
 			throw new ServletException(ex);
-		}
+		} 
     }
 	
 	@SuppressWarnings("deprecation")

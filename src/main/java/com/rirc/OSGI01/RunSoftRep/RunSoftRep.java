@@ -72,7 +72,7 @@ public class RunSoftRep implements KDCompMethod {
 
 	@KDCompStepInfoPing
 	public String stepInfo() {
-		return String.valueOf(counterNRow);
+		return "RunSoftRep: "+String.valueOf(counterNRow)+' '+String.valueOf(sheetname);
 	}
 
 	private void make() throws Exception {
