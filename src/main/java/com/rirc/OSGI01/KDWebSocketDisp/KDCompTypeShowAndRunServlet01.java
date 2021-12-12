@@ -32,6 +32,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.rirc.OSGI01.ConnPrms;
+import com.rirc.OSGI01.Exception2CauseRuntimeException;
 import com.rirc.OSGI01.KBCmpArr;
 import com.rirc.OSGI01.KDCompField;
 import com.rirc.OSGI01.KDCompMethod;
@@ -78,21 +79,21 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 		public KDCompMethod getServ() {
 			return serv;
 		}
-		public Method _getMethod() {
+		public Method getMethod() {
 			return method;
 		}
 
 		@Override
 		public String toString() {
 			return "PrData [cf=" + cf + ", serv=" + serv + ", method=" + method + ", getCf()=" + getCf()
-					+ ", getServ()=" + getServ() + ", _getMethod()=" + _getMethod() + ", getClass()=" + getClass()
+					+ ", getServ()=" + getServ() + ", _getMethod()=" + getMethod() + ", getClass()=" + getClass()
 					+ ", hashCode()=" + hashCode() + ", toString()=" + super.toString() + "]";
 		}
     }
 
 	private final ConcurrentMap<UUID,PrData> mUUID2CF= new ConcurrentHashMap<UUID,PrData>();
 	protected static final ConcurrentMap<Long,File[]> mSysTime2TmpFile= new ConcurrentHashMap<Long,File[]>();
-	
+
 	private static UUID runKDComp(ConcurrentMap<UUID,PrData> mUUID2CF, String runKDComp_json) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		JsonElement element= JsonParser.parseString(runKDComp_json);
 		JsonObject rootObject= element.getAsJsonObject();
@@ -251,8 +252,8 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 			serv.ping();
 			try {
 				return method.invoke(serv);
-			} catch (Exception ex) { // InvocationTargetException
-				throw new RuntimeException(ex);
+			} catch (Exception ex) {
+				throw new Exception2CauseRuntimeException(ex);
 			}
     	}, KDExecutors.getStdExecutor());
 		mUUID2CF.put(compIdent, new PrData(cf, serv, method));
@@ -279,7 +280,7 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 			String retName;
 			boolean isArray;
 			{
-				Method method= prData._getMethod();
+				Method method= prData.getMethod();
 				if (method!=null) {
 					Class<?> rt= method.getReturnType();
 					isArray= rt.isArray();
@@ -305,7 +306,7 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 					try {
 						return runSoftRep.makes();
 					} catch (Exception ex) {
-						throw new RuntimeException(ex);
+						throw new Exception2CauseRuntimeException(ex);
 					}
 				}, KDExecutors.getStdExecutor());
 				mUUID2CF.put(compIdent, new PrData(cf, runSoftRep, null));
@@ -335,16 +336,8 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 		} catch (InterruptedException | CancellationException ex) {
 			joRes.addProperty("Exception", KDStr.getExMessage(ex));
 		} catch (ExecutionException ex1) {
-			Throwable ex2= ex1;
-			
-			Throwable e;
-			while ((e= ex2.getCause())!=null) {
-				if (e instanceof InvocationTargetException) {
-					ex2= e.getCause();
-					if (ex2==null) ex2= e;
-					break;
-				} else ex2= e;
-			}
+			Throwable ex2= ex1.getCause();
+			if (ex2 instanceof Exception2CauseRuntimeException) ex2= ex2.getCause();
 
 			joRes.addProperty("Exception", KDStr.getExAllInfo(ex2));
 

@@ -3,8 +3,6 @@ package com.rirc.OSGI01.RunSoftRep;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,6 +29,7 @@ import com.rirc.OSGI01.DataViewStructure.TextLabel;
 import com.rirc.OSGI01.KDCompMethod;
 import com.rirc.OSGI01.KDCompStepInfoPing;
 import com.rirc.OSGI01.KDConnection;
+import com.rirc.OSGI01.KDFile;
 import com.rirc.OSGI01.SoftRep;
 
 public class RunSoftRep implements KDCompMethod {
@@ -359,8 +358,7 @@ public class RunSoftRep implements KDCompMethod {
 			make();
 		}
 		
-		Path pathXLS= Files.createTempFile(null, null);
-		File fileXLS= pathXLS.toFile();
+		File fileXLS= KDFile.createTemp();
 
 		try (OutputStream f= new FileOutputStream(fileXLS)) {
 			wb.write(f);

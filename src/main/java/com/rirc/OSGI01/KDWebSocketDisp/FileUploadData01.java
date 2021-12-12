@@ -3,7 +3,6 @@ package com.rirc.OSGI01.KDWebSocketDisp;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +25,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.http.HttpService;
 
+import com.rirc.OSGI01.KDFile;
 import com.rirc.OSGI01.KDHttpServlet;
 
 @Component
@@ -131,10 +131,8 @@ public class FileUploadData01 extends KDHttpServlet {
 		{
 	    	List<File> uplFiles= new ArrayList<File>();
 	        for (Part p : req.getParts()) {
-	        	Path tempPath= Files.createTempFile(null, null);
-	            File tempFile= tempPath.toFile();
-	            tempFile.deleteOnExit();
-	            Files.copy(p.getInputStream(), tempPath, StandardCopyOption.REPLACE_EXISTING);
+	            File tempFile= KDFile.createTemp();
+	            Files.copy(p.getInputStream(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	            uplFiles.add(tempFile);
 	        }
 	        mUplFiles.put(uploadId, uplFiles.toArray(new File[uplFiles.size()]));

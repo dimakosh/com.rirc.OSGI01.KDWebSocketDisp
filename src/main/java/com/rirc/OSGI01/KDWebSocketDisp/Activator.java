@@ -25,6 +25,13 @@ import com.rirc.OSGI01.KDCompType;
 //bundle:install -s wrap:mvn:org.apache.poi/poi/4.0.1
 //bundle:install -s wrap:mvn:org.apache.poi/poi-ooxml/4.0.1 - нет!!!
 
+//<version>4.0.1</version>
+
+// - не работает -
+//bundle:install -s wrap:mvn:org.apache.poi/poi/4.1.2
+//bundle:install -s wrap:mvn:org.apache.poi/poi-ooxml/4.1.2
+//bundle:install -s wrap:mvn:org.jxls/jxls-poi/2.10.0
+
 //		//bundle:install -s wrap:mvn:org.apache.poi/poi/5.0.0
 //		//bundle:install -s wrap:mvn:org.apache.poi/poi-ooxml/5.0.0
 

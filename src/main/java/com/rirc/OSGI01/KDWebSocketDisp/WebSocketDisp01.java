@@ -15,7 +15,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.rirc.OSGI01.CloseableIterable;
 import com.rirc.OSGI01.ConnPrms;
 import com.rirc.OSGI01.KBCmpArr;
 import com.rirc.OSGI01.KDCompField;
@@ -206,12 +205,12 @@ public class WebSocketDisp01 {
 
 			JsonElement elTypes= joSQLVals.get("Types");
 			if (elTypes==null) {
-				ret[n]= KDOSGIFBSQL.execSQL(connPrms, sql);
+				ret[n]= KDOSGISQL.execSQL(connPrms, sql);
 			} else {
 				JsonArray jaTypes= elTypes.getAsJsonArray();
 				JsonArray jaValues= joSQLVals.get("Values").getAsJsonArray();
 
-				ret[n]= KDOSGIFBSQL.execSQL(connPrms, sql, setPreparedValues(jaTypes, jaValues));
+				ret[n]= KDOSGISQL.execSQL(connPrms, sql, setPreparedValues(jaTypes, jaValues));
 			}
 		}
 		
@@ -223,14 +222,19 @@ public class WebSocketDisp01 {
 			JsonObject joRes= new JsonObject();
 			joRes.addProperty("ReqNo", reqNo);
 			
-			List<CloseableIterable<Object[]>> rets= execSelect(reqNo, rootObject);
+			List<KDOSGISQL.TypeIterable> rets= execSelect(reqNo, rootObject);
 			
 			joRes.addProperty("data", rets.size());
 
 			for (int n= 0; n< rets.size(); n++) {
-				try (CloseableIterable<Object[]> ret= rets.get(n)) {
+				try (KDOSGISQL.TypeIterable ret= rets.get(n)) {
+					
 					JsonArray el_data= new JsonArray();
-					for (Object[] r : ret) {
+					
+					JsonArray el_type= new JsonArray();
+					for (int t : ret.types) el_type.add(t);
+					
+					for (Object[] r : ret.rows) {
 
 						JsonArray jr= new JsonArray();
 						for (int i= 0; i< r.length; i++) {
@@ -241,10 +245,12 @@ public class WebSocketDisp01 {
 					}
 
 					joRes.add("data"+n, el_data);
+					joRes.add("type"+n, el_type);
 				}
 			}
 			session.getRemote().sendString(joRes.toString());
 		} catch (Exception ex) {
+			//ex.printStackTrace();
 			JsonObject joError= new JsonObject();
 			joError.addProperty("ReqNo", reqNo);
 			joError.addProperty("Exception", KDStr.getExMessage(ex));
@@ -252,13 +258,13 @@ public class WebSocketDisp01 {
 		}
 	}
 
-	private List<CloseableIterable<Object[]>> execSelect(int reqNo, JsonObject joReg) throws Exception {
+	private List<KDOSGISQL.TypeIterable> execSelect(int reqNo, JsonObject joReg) throws Exception {
 		JsonObject joLogin= joReg.get("Login").getAsJsonObject();
         ConnPrms connPrms= new ConnPrms(joLogin.get("server").getAsString(), joLogin.get("source").getAsString(), joLogin.get("user").getAsString(), joLogin.get("pass").getAsString());
 
 		JsonArray jaSQLPach= joReg.get("SQLPach").getAsJsonArray();
 		
-		List<CloseableIterable<Object[]>> ret= new ArrayList<CloseableIterable<Object[]>>();
+		List<KDOSGISQL.TypeIterable> ret= new ArrayList<KDOSGISQL.TypeIterable>();
 
 		for (int n= 0; n< jaSQLPach.size(); n++) {
 			JsonObject joSQLVals= jaSQLPach.get(n).getAsJsonObject();
@@ -266,12 +272,12 @@ public class WebSocketDisp01 {
 
 			JsonElement elTypes= joSQLVals.get("Types");
 			if (elTypes==null) {
-				ret.add(KDOSGIFBSQL.execSelect(connPrms, sql));
+				ret.add(KDOSGISQL.execSelect(connPrms, sql));
 			} else {
 				JsonArray jaTypes= elTypes.getAsJsonArray();
 				JsonArray jaValues= joSQLVals.get("Values").getAsJsonArray();
 
-				ret.add(KDOSGIFBSQL.execSelect(connPrms, sql, setPreparedValues(jaTypes, jaValues)));
+				ret.add(KDOSGISQL.execSelect(connPrms, sql, setPreparedValues(jaTypes, jaValues)));
 			}
 		}
 		
