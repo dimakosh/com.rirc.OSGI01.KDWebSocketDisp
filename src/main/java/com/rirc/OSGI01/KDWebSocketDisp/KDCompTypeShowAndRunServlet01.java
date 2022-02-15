@@ -340,16 +340,6 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 			if (ex2 instanceof Exception2CauseRuntimeException) ex2= ex2.getCause();
 
 			joRes.addProperty("Exception", KDStr.getExAllInfo(ex2));
-
-			/*
-			try {
-				Throwable ex2= ex1.getCause().getCause();
-				if (ex2 instanceof InvocationTargetException) ex2= ex2.getCause(); 
-				joRes.addProperty("Exception", KDStr.getExAllInfo(ex2));
-			} catch (Exception ex3) {
-				joRes.addProperty("Exception", KDStr.getExAllInfo(ex1)+'\n'+KDStr.getExAllInfo(ex3));
-			}
-			*/
 		} catch (TimeoutException exTimeoutException) {
 			JsonArray jaStepNames= rootObject.get("StepNames").getAsJsonArray();
 			
@@ -406,7 +396,7 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 		res.setCharacterEncoding("UTF-8");
 		res.setContentType("text/plain; charset=UTF-8");
 		res.addHeader("Access-Control-Allow-Origin", "*");
-		
+
 		res.getWriter().print(KDTime.getCurDateTime());
     }
 	
@@ -428,10 +418,8 @@ public class KDCompTypeShowAndRunServlet01 extends KDHttpServlet {
 				res.getWriter().print(pingKDComp(mUUID2CF, pingKDComp_json));
 			}			
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
-			ex.printStackTrace();
 			throw new ServletException(KDStr.getExMessage(ex));
 		} catch (InvocationTargetException ex) {
-			ex.printStackTrace();
 			throw new ServletException(ex);
 		} 
     }
